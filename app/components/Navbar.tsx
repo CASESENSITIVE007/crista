@@ -1,193 +1,213 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { LOGO, SECTIONS, navItems } from "./data";
 
-const navLinks = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Courses", href: "#courses" },
-  { label: "Rankers", href: "#rankers" },
-  { label: "Gallery", href: "#gallery" },
-  { label: "Contact", href: "#contact" },
-];
+function Chevron({ open }: { open?: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="10"
+      viewBox="0 0 10 10"
+      aria-hidden
+      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+    >
+      <path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSection, setMobileSection] = useState<string | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: scrolled ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.95)",
-        boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.15)" : "0 1px 5px rgba(0,0,0,0.08)",
-        backdropFilter: "blur(10px)",
-        transition: "all 0.3s ease",
-      }}
+    <header
+      className={`fixed inset-x-0 top-0 z-50 bg-white transition-shadow duration-300 ${
+        scrolled ? "shadow-[0_6px_24px_rgba(19,25,35,0.08)]" : "border-b border-black/5"
+      }`}
     >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 1.5rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: "70px",
-        }}
-      >
-        {/* Logo */}
-        <a href="#home" style={{ textDecoration: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                background: "#cc0000",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontWeight: 900,
-                fontSize: "1.2rem",
-              }}
-            >
-              C
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: "1.2rem", color: "#cc0000", lineHeight: 1.1 }}>
-                CRISTA
-              </div>
-              <div style={{ fontSize: "0.6rem", color: "#666", fontWeight: 600, letterSpacing: "0.08em" }}>
-                INSTITUTE
-              </div>
-            </div>
-          </div>
+      <div className="container-max flex h-[76px] items-center justify-between gap-6">
+        <a href={SECTIONS.home} aria-label="Infoglen home" className="shrink-0">
+          <img src={LOGO} alt="Infoglen" className="h-11 w-auto" />
         </a>
 
-        {/* Desktop Links */}
-        <div
-          style={{
-            display: "flex",
-            gap: "2rem",
-            alignItems: "center",
-          }}
-          className="desktop-nav"
-        >
-          {navLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              style={{
-                textDecoration: "none",
-                color: "#333",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-                transition: "color 0.2s",
-                position: "relative",
-              }}
-              onMouseEnter={(e) => ((e.target as HTMLElement).style.color = "#cc0000")}
-              onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "#333")}
-            >
-              {link.label}
-            </a>
-          ))}
-          <a href="#contact" className="btn-primary" style={{ padding: "0.5rem 1.25rem", fontSize: "0.9rem" }}>
-            Enroll Now
-          </a>
-        </div>
+        {/* Desktop navigation */}
+        <nav className="hidden lg:block" onMouseLeave={() => setHovered(null)}>
+          <ul className="flex items-center gap-1">
+            {navItems.map((item) => {
+              const open = hovered === item.label;
+              return (
+                <li key={item.label} className="relative" onMouseEnter={() => setHovered(item.label)}>
+                  {item.links ? (
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      onClick={() => setHovered(open ? null : item.label)}
+                      className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-[15px] font-medium transition-colors ${
+                        open ? "text-brand" : "text-ink hover:text-brand"
+                      }`}
+                    >
+                      {item.label}
+                      <Chevron open={open} />
+                    </button>
+                  ) : (
+                    <a
+                      href={item.href}
+                      className="block rounded-md px-3 py-2 text-[15px] font-medium text-ink transition-colors hover:text-brand"
+                    >
+                      {item.label}
+                    </a>
+                  )}
 
-        {/* Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{
-            display: "none",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "0.5rem",
-            flexDirection: "column",
-            gap: "5px",
-          }}
-          className="hamburger"
-          aria-label="Toggle menu"
-        >
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              style={{
-                display: "block",
-                width: "25px",
-                height: "3px",
-                background: "#cc0000",
-                borderRadius: "2px",
-                transition: "all 0.3s",
-              }}
-            />
-          ))}
-        </button>
+                  <AnimatePresence>
+                    {item.links && open && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.18 }}
+                        className="absolute left-0 top-full pt-3"
+                      >
+                        <div
+                          className={`flex overflow-hidden rounded-xl border border-black/5 bg-white shadow-[0_20px_50px_rgba(19,25,35,0.14)] ${
+                            item.feature ? "w-[640px]" : "w-[280px]"
+                          }`}
+                        >
+                          <ul
+                            className={`grid flex-1 gap-0.5 p-4 ${
+                              item.feature && item.links.length > 6 ? "grid-cols-2" : "grid-cols-1"
+                            }`}
+                          >
+                            {item.links.map((l) => (
+                              <li key={l.label}>
+                                <a
+                                  href={l.href}
+                                  className="block rounded-md px-3 py-2 text-sm text-ink/80 transition-colors hover:bg-sky hover:text-brand"
+                                >
+                                  {l.label}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                          {item.feature && (
+                            <a
+                              href={item.feature.href}
+                              className="group flex w-[240px] flex-col bg-sky p-4"
+                            >
+                              <img
+                                src={item.feature.image}
+                                alt=""
+                                className="mb-3 h-28 w-full rounded-lg object-cover"
+                              />
+                              <span className="font-display text-sm font-semibold text-ink">
+                                {item.feature.title}
+                              </span>
+                              <span className="mt-1 text-xs leading-relaxed text-ink/70">
+                                {item.feature.text}
+                              </span>
+                              <span className="mt-3 text-xs font-semibold text-brand group-hover:underline">
+                                {item.feature.cta} →
+                              </span>
+                            </a>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <a href={SECTIONS.contact} className="btn-accent hidden sm:inline-flex">
+            Contact Us
+          </a>
+          <button
+            type="button"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen((v) => !v)}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-ink lg:hidden"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+              {mobileOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile navigation */}
       <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            style={{
-              background: "white",
-              borderTop: "2px solid #cc0000",
-              overflow: "hidden",
-            }}
+        {mobileOpen && (
+          <motion.nav
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
+            className="overflow-hidden border-t border-black/5 bg-white lg:hidden"
           >
-            <div style={{ padding: "1rem 1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  style={{
-                    textDecoration: "none",
-                    color: "#333",
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    padding: "0.5rem 0",
-                    borderBottom: "1px solid #f0f0f0",
-                  }}
-                >
-                  {link.label}
+            <ul className="container-max max-h-[75vh] overflow-y-auto py-3">
+              {navItems.map((item) => {
+                const open = mobileSection === item.label;
+                return (
+                  <li key={item.label} className="border-b border-black/5 last:border-0">
+                    {item.links ? (
+                      <>
+                        <button
+                          type="button"
+                          aria-expanded={open}
+                          onClick={() => setMobileSection(open ? null : item.label)}
+                          className="flex w-full items-center justify-between py-3 text-left font-medium text-ink"
+                        >
+                          {item.label}
+                          <Chevron open={open} />
+                        </button>
+                        {open && (
+                          <ul className="pb-3 pl-3">
+                            {item.links.map((l) => (
+                              <li key={l.label}>
+                                <a href={l.href} className="block py-2 text-sm text-ink/75 hover:text-brand">
+                                  {l.label}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ) : (
+                      <a href={item.href} className="block py-3 font-medium text-ink">
+                        {item.label}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+              <li className="pt-4 pb-2 sm:hidden">
+                <a href={SECTIONS.contact} className="btn-accent w-full justify-center">
+                  Contact Us
                 </a>
-              ))}
-              <a href="#contact" className="btn-primary" style={{ textAlign: "center" }}>
-                Enroll Now
-              </a>
-            </div>
-          </motion.div>
+              </li>
+            </ul>
+          </motion.nav>
         )}
       </AnimatePresence>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .hamburger { display: flex !important; }
-        }
-      `}</style>
-    </motion.nav>
+    </header>
   );
 }
